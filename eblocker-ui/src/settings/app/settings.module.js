@@ -217,7 +217,7 @@ import LibsCCppComponent from './components/openSourceLicenses/libs-c-cpp.compon
 import LibsJavascriptComponent from './components/openSourceLicenses/libs-javascript.component';
 import LibsRubyComponent from './components/openSourceLicenses/libs-ruby.component';
 import LibsDebianComponent from './components/openSourceLicenses/libs-debian.component';
-
+import DoctorDiagnosisComponent from './components/doctor/diagnosis/doctor-diagnosis.component'
 
 // ** Components for code reuse (instead of directives)
 import RemoveTableEntriesComponent from './components/table/remove-entries.component';
@@ -463,6 +463,7 @@ angular.module('eblocker.adminconsole', [
     .component('vpnHomeStatusComponent', VpnHomeStatusComponent)
     .component('vpnHomeDevicesComponent', VpnHomeDevicesComponent)
     .component('vpnHomeWizardComponent', VpnHomeWizardComponent)
+    .component('doctorDiagnosisComponent', DoctorDiagnosisComponent)
     .component('captivePortalComponent', CaptivePortalComponent)
     .component('compressionComponent', CompressionComponent)
     .component('doNotTrackComponent', DoNotTrackComponent)

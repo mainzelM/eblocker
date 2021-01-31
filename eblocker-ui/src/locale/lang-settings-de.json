@@ -1898,6 +1898,9 @@
         "IP_ANON" : {
             "LABEL" : "IP-Anonymisierung"
         },
+        "DOCTOR": {
+            "LABEL" : "Doctor"
+        },
         "LANG" : {
             "DE" : "Deutsch",
             "EN" : "English"
