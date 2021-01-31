@@ -124,6 +124,7 @@ import org.eblocker.server.http.controller.DashboardCardController;
 import org.eblocker.server.http.controller.DeviceController;
 import org.eblocker.server.http.controller.DeviceRegistrationController;
 import org.eblocker.server.http.controller.DnsController;
+import org.eblocker.server.http.controller.DoctorController;
 import org.eblocker.server.http.controller.DomainBlockingController;
 import org.eblocker.server.http.controller.DomainWhiteListController;
 import org.eblocker.server.http.controller.EventController;
@@ -829,5 +830,11 @@ public class EblockerModule extends BaseModule {
     @Singleton
     public BlockerController blockerController() {
         return ControllerWrapperFactory.wrap(BlockerController.class);
+    }
+
+    @Provides
+    @Singleton
+    public DoctorController doctorControllerController() {
+        return ControllerWrapperFactory.wrap(DoctorController.class);
     }
 }

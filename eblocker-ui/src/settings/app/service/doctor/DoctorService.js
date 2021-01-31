@@ -14,27 +14,28 @@
  * implied. See the License for the specific language governing
  * permissions and limitations under the License.
  */
-export default {
-    templateUrl: 'app/components/doctor/diagnosis/doctor-diagnosis.component.html',
-    controller: Controller,
-    controllerAs: 'vm'
-};
-
-function Controller(logger, DoctorService) {
+export default function DoctorService(logger, $http, $q) {
     'ngInject';
-    'use strict';
 
-    const vm = this;
-
-    vm.$onInit = function() {
-        runDiagnosis();
-    };
+    const PATH = '/api/adminconsole/doctor';
+    const PATH_DIAGNOSIS = PATH + '/diagnosis';
 
     function runDiagnosis() {
-        DoctorService.runDiagnosis().then(function success(response) {
-            vm.diagnosisResult = response.data;
-        }, function error(response) {
-            logger.error('Error running diagnosis', response);
+        return $http.get(PATH_DIAGNOSIS).then(standardSuccess, function error(response) {
+            logger.error('Unable to get diagnosis', response);
+            return $q.reject(response);
         });
+    }
+
+    return {
+        runDiagnosis: runDiagnosis
+    };
+
+    function standardSuccess(response) {
+        return response;
+    }
+
+    function standardError(response) {
+        return $q.reject(response);
     }
 }

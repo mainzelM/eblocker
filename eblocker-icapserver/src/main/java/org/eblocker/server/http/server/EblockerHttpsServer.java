@@ -50,6 +50,7 @@ import org.eblocker.server.http.controller.DashboardCardController;
 import org.eblocker.server.http.controller.DeviceController;
 import org.eblocker.server.http.controller.DeviceRegistrationController;
 import org.eblocker.server.http.controller.DnsController;
+import org.eblocker.server.http.controller.DoctorController;
 import org.eblocker.server.http.controller.DomainBlockingController;
 import org.eblocker.server.http.controller.DomainWhiteListController;
 import org.eblocker.server.http.controller.EventController;
@@ -177,6 +178,7 @@ public class EblockerHttpsServer implements Preprocessor {
     private final FeatureToggleController featureToggleController;
     private final ConnectionCheckController connectionCheckController;
     private final BlockerController blockerController;
+    private final DoctorController doctorController;
 
     private Channel httpsChannel;
 
@@ -243,7 +245,8 @@ public class EblockerHttpsServer implements Preprocessor {
                                LedSettingsController ledSettingsController,
                                TasksController tasksController,
                                ConnectionCheckController connectionCheckController,
-                               BlockerController blockerController
+                               BlockerController blockerController,
+                               DoctorController doctorController
     ) {
         // Set up SerializationProvider to make sure special characters like "&"
         // are transported to the frontend without encoding
@@ -341,6 +344,7 @@ public class EblockerHttpsServer implements Preprocessor {
         this.tasksController = tasksController;
         this.connectionCheckController = connectionCheckController;
         this.blockerController = blockerController;
+        this.doctorController = doctorController;
 
         setUpRoutes();
 
@@ -2333,6 +2337,11 @@ public class EblockerHttpsServer implements Preprocessor {
                 .uri("/api/adminconsole/tasks/stats", tasksController)
                 .action("getPoolStats", HttpMethod.GET)
                 .name("adminconsole.tasks.stats.get");
+
+        server
+                .uri("/api/adminconsole/doctor/diagnosis", doctorController)
+                .action("runDiagnosis", HttpMethod.GET)
+                .name("adminconsole.doctor.diagnosis.get");
     }
 
     private void addControlBarRoutes() {

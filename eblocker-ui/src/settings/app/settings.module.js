@@ -272,6 +272,7 @@ import DialogService from './service/dialog/DialogService';
 import CloakingService from './service/cloaking/CloakingService';
 import NetworkService from './service/network/NetworkService';
 import VpnService from './service/vpn/VpnService';
+import DoctorService from "./service/doctor/DoctorService";
 import TorService from './service/tor/TorService';
 import TrustedAppsService from './service/ssl/TrustedAppsService';
 import SslSuggestionsService from './service/ssl/SslSuggestionsService';
@@ -581,6 +582,7 @@ angular.module('eblocker.adminconsole', [
     .factory('PauseService', PauseService)
     .factory('SplashService', SplashService)
     .factory('WindowEventService', WindowEventService)
+    .factory('DoctorService', DoctorService)
     .filter('ebfilter', ebFilter)
     .filter('displayHours', function() {
         return function(minutes) {
