@@ -9,6 +9,9 @@ import org.eblocker.server.common.network.NetworkServices;
 import java.util.ArrayList;
 import java.util.List;
 
+import static org.eblocker.server.common.data.DoctorDiagnosisResult.Audience.EVERYONE;
+import static org.eblocker.server.common.data.DoctorDiagnosisResult.Severity.HINT;
+
 @Singleton
 public class DoctorService {
 
@@ -24,8 +27,9 @@ public class DoctorService {
 
         NetworkConfiguration currentNetworkConfiguration = networkServices.getCurrentNetworkConfiguration();
         if (currentNetworkConfiguration.isAutomatic()) {
-            problems.add(new DoctorDiagnosisResult(DoctorDiagnosisResult.Severity.HINT, DoctorDiagnosisResult.Audience.EVERYONE, "You are using the automatic network mode. It may cause problems."));
+            problems.add(new DoctorDiagnosisResult(HINT, EVERYONE, "You are using the automatic network mode. It may cause problems."));
         }
+
         return problems;
     }
 }
