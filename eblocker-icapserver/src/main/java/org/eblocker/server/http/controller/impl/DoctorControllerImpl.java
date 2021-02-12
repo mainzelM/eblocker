@@ -1,6 +1,7 @@
 package org.eblocker.server.http.controller.impl;
 
 import com.google.inject.Inject;
+import org.eblocker.server.common.data.DoctorDiagnosisResult;
 import org.eblocker.server.http.controller.DoctorController;
 import org.eblocker.server.http.service.DoctorService;
 import org.restexpress.Request;
@@ -22,7 +23,7 @@ public class DoctorControllerImpl implements DoctorController {
     }
 
     @Override
-    public List<String> runDiagnosis(Request request, Response response) {
+    public List<DoctorDiagnosisResult> runDiagnosis(Request request, Response response) {
         return doctorService.runDiagnosis();
     }
 }

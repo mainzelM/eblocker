@@ -2,6 +2,7 @@ package org.eblocker.server.http.service;
 
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
+import org.eblocker.server.common.data.DoctorDiagnosisResult;
 import org.eblocker.server.common.data.NetworkConfiguration;
 import org.eblocker.server.common.network.NetworkServices;
 
@@ -18,12 +19,12 @@ public class DoctorService {
         this.networkServices = networkServices;
     }
 
-    public List<String> runDiagnosis() {
-        List<String> problems = new ArrayList<>();
+    public List<DoctorDiagnosisResult> runDiagnosis() {
+        List<DoctorDiagnosisResult> problems = new ArrayList<>();
 
         NetworkConfiguration currentNetworkConfiguration = networkServices.getCurrentNetworkConfiguration();
         if (currentNetworkConfiguration.isAutomatic()) {
-            problems.add("You are using the automatic mode, consider switching to expert mode");
+            problems.add(new DoctorDiagnosisResult(DoctorDiagnosisResult.Severity.HINT, DoctorDiagnosisResult.Audience.EVERYONE, "You are using the automatic network mode. It may cause problems."));
         }
         return problems;
     }
