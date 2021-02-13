@@ -28,6 +28,6 @@ public class DoctorDiagnosisResult {
     }
 
     public enum Severity {
-        RECOMMENDATION_NOT_FOLLOWED, HINT, FAILED_PROBE, ANORMALY
+        RECOMMENDATION_NOT_FOLLOWED, HINT, FAILED_PROBE, ANORMALY, GOOD
     }
 }
