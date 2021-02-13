@@ -1,6 +1,8 @@
 <div layout="column" layout-fill class="settings-child-view">
     <div layout-padding>
-        <p>Hello World</p>
-        <p>Result: {{vm.diagnosisResult}}</p>
+        <p>Your diagnosis:</p>
+        <div ng-repeat="diag in vm.diagnosisResult">
+            <p>{{diag}}</p>
+        </div>
     </div>
 </div>
