@@ -86,7 +86,9 @@ public class DoctorService {
 
         problems.add(new DoctorDiagnosisResult(RECOMMENDATION_NOT_FOLLOWED, EVERYONE, "FAKE: Control bar is not auto-configured for device XY"));
 
-        if (!automaticUpdater.isActivated()) {
+        if (automaticUpdater.isActivated()) {
+            problems.add(new DoctorDiagnosisResult(GOOD, EVERYONE, "Your eBlocker is configured to automatically update itself on a daily basis"));
+        } else {
             problems.add(new DoctorDiagnosisResult(RECOMMENDATION_NOT_FOLLOWED, EVERYONE, "Automatic updates are disabled"));
         }
 
