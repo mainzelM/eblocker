@@ -19,7 +19,6 @@ import java.util.List;
 
 import static org.eblocker.server.common.data.DoctorDiagnosisResult.Audience.EVERYONE;
 import static org.eblocker.server.common.data.DoctorDiagnosisResult.Audience.EXPERT;
-import static org.eblocker.server.common.data.DoctorDiagnosisResult.Audience.NOVICE;
 import static org.eblocker.server.common.data.DoctorDiagnosisResult.Severity.ANORMALY;
 import static org.eblocker.server.common.data.DoctorDiagnosisResult.Severity.FAILED_PROBE;
 import static org.eblocker.server.common.data.DoctorDiagnosisResult.Severity.GOOD;
@@ -68,7 +67,7 @@ public class DoctorService {
             problems.add(new DoctorDiagnosisResult(FAILED_PROBE, EVERYONE, "FAKE: IPv6 seems to be enabled in your network. Please turn it off as you are using HTTPS"));
 
         } else {
-            problems.add(new DoctorDiagnosisResult(RECOMMENDATION_NOT_FOLLOWED, NOVICE, "HTTPS is not enabled. You will get better tracking protection with it"));
+            problems.add(new DoctorDiagnosisResult(RECOMMENDATION_NOT_FOLLOWED, EXPERT, "HTTPS is not enabled. You will get better tracking protection with it"));
         }
 
         problems.add(new DoctorDiagnosisResult(RECOMMENDATION_NOT_FOLLOWED, EVERYONE, "FAKE: Automatic mode is not enabled for device XY"));
@@ -76,7 +75,7 @@ public class DoctorService {
         if (deviceFactory.isAutoEnableNewDevices()) {
             problems.add(new DoctorDiagnosisResult(RECOMMENDATION_NOT_FOLLOWED, EVERYONE, "eBlocker will be automatically enabled for new devices. This may cause trouble when a new device is not ready for eBlocker"));
         } else {
-            problems.add(new DoctorDiagnosisResult(GOOD, EVERYONE, "eBlocker will be automatically enabled for new devices. Don't forget to enable new devices manually..."));
+            problems.add(new DoctorDiagnosisResult(GOOD, EVERYONE, "eBlocker will not be automatically enabled for new devices, so you don't run into trouble during setup. Don't forget to enable new devices manually..."));
         }
 
         problems.add(new DoctorDiagnosisResult(RECOMMENDATION_NOT_FOLLOWED, EVERYONE, "FAKE: Malware & Phishing Blocker list is not enabled globally for Domain Blocking"));
