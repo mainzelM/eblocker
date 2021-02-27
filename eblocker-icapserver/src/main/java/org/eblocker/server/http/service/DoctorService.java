@@ -2,8 +2,10 @@ package org.eblocker.server.http.service;
 
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
+import org.eblocker.server.common.data.Device;
 import org.eblocker.server.common.data.DeviceFactory;
 import org.eblocker.server.common.data.DoctorDiagnosisResult;
+import org.eblocker.server.common.data.FilterMode;
 import org.eblocker.server.common.data.NetworkConfiguration;
 import org.eblocker.server.common.data.dns.DnsRating;
 import org.eblocker.server.common.data.dns.NameServerStats;
@@ -20,7 +22,10 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
+import static java.util.function.Predicate.not;
 import static org.eblocker.server.common.data.DoctorDiagnosisResult.Audience.EVERYONE;
 import static org.eblocker.server.common.data.DoctorDiagnosisResult.Audience.EXPERT;
 import static org.eblocker.server.common.data.DoctorDiagnosisResult.Severity.FAILED_PROBE;
@@ -37,15 +42,18 @@ public class DoctorService {
     private final DebianUpdater debianUpdater;
     private final DnsStatisticsService dnsStatisticsService;
     private final DeviceFactory deviceFactory;
+    private final DeviceService deviceService;
 
     @Inject
-    public DoctorService(NetworkServices networkServices, SslService sslService, AutomaticUpdater automaticUpdater, DebianUpdater debianUpdater, DnsStatisticsService dnsStatisticsService, DeviceFactory deviceFactory) {
+    public DoctorService(NetworkServices networkServices, SslService sslService, AutomaticUpdater automaticUpdater, DebianUpdater debianUpdater, DnsStatisticsService dnsStatisticsService, DeviceFactory deviceFactory,
+                         DeviceService deviceService) {
         this.networkServices = networkServices;
         this.sslService = sslService;
         this.automaticUpdater = automaticUpdater;
         this.debianUpdater = debianUpdater;
         this.dnsStatisticsService = dnsStatisticsService;
         this.deviceFactory = deviceFactory;
+        this.deviceService = deviceService;
     }
 
     public List<DoctorDiagnosisResult> runDiagnosis() {
@@ -59,7 +67,7 @@ public class DoctorService {
 
         diagnoses.addAll(httpsRelatedChecks());
 
-        //diagnoses.add(recommendationNotFollowedEveryone("FAKE: Automatic mode is not enabled for device XY"));
+        diagnoses.addAll(checkDevices());
 
         diagnoses.add(autoEnableNewDevicesCheck());
 
@@ -186,6 +194,59 @@ public class DoctorService {
         }
     }
 
+    private List<DoctorDiagnosisResult> checkDevices() {
+        List<DoctorDiagnosisResult> diagnoses = new ArrayList<>();
+
+        diagnoses.add(checkDevicesUseAutomaticFilterMode());
+
+        diagnoses.add(checkDevicesHaveMalwareFilterEnabled());
+
+        diagnoses.add(checkDevicesUseControlBarAutoMode());
+
+        return diagnoses;
+    }
+
+    private DoctorDiagnosisResult checkDevicesUseAutomaticFilterMode() {
+        List<String> nonAutomaticDevices = enabledDevices()
+                .filter(d -> !FilterMode.AUTOMATIC.equals(d.getFilterMode()))
+                .map(Device::getName)
+                .collect(Collectors.toList());
+        if (nonAutomaticDevices.isEmpty()) {
+            return goodForEveryone("All your devices are set to automatic mode");
+        } else {
+            return recommendationNotFollowedEveryone("The following devices are not set to automatic blocking mode: " + nonAutomaticDevices);
+        }
+    }
+
+    private DoctorDiagnosisResult checkDevicesHaveMalwareFilterEnabled() {
+        List<String> nonMalwareDevices = enabledDevices()
+                .filter(not(Device::isMalwareFilterEnabled))
+                .map(Device::getName)
+                .collect(Collectors.toList());
+        if (nonMalwareDevices.isEmpty()) {
+            return goodForEveryone("All your devices have malware filtering enabled");
+        } else {
+            return recommendationNotFollowedEveryone("The following devices have malware filtering disabled: " + nonMalwareDevices);
+        }
+    }
+
+    private DoctorDiagnosisResult checkDevicesUseControlBarAutoMode() {
+        List<String> nonAutoControlBarModeDevices = enabledDevices()
+                .filter(not(Device::isControlBarAutoMode))
+                .map(Device::getName)
+                .collect(Collectors.toList());
+        if (nonAutoControlBarModeDevices.isEmpty()) {
+            return goodForEveryone("All your devices are using the automatic ControlBar configuration");
+        } else {
+            return recommendationNotFollowedEveryone("The following devices are not using the automatic ControlBar configuration: " + nonAutoControlBarModeDevices);
+        }
+    }
+
+    private Stream<Device> enabledDevices() {
+        return deviceService.getDevices(true).stream()
+                .filter(Device::isEnabled);
+    }
+
     private DoctorDiagnosisResult failedProbe(String message) {
         return new DoctorDiagnosisResult(FAILED_PROBE, EVERYONE, message);
     }
@@ -201,5 +262,4 @@ public class DoctorService {
     private DoctorDiagnosisResult hintForExpert(String message) {
         return new DoctorDiagnosisResult(HINT, EXPERT, message);
     }
-
 }
