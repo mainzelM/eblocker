@@ -1,8 +1,13 @@
 <div layout="column" layout-fill class="settings-child-view">
     <div layout-padding>
-        <p>Your diagnosis:</p>
-        <div ng-repeat="diag in vm.diagnosisResult">
-            <p>Severity: {{diag.severity}}, audience: {{diag.audience}}: {{diag.message}}</p>
+        <div style="margin-top: 10px;" class="md-headline">
+            {{ 'ADMINCONSOLE.DOCTOR.DIAGNOSIS.TITLE' | translate}}
         </div>
+        <eb-table table-data="vm.diagnosisResult"
+                  table-header="vm.tableHeaderConfig"
+                  table-template="app/components/doctor/diagnosis/diagnosis-table.template.html"
+                  table-id="vm.tableId"
+                  template-callback="vm.templateCallback">
+        </eb-table>
     </div>
 </div>

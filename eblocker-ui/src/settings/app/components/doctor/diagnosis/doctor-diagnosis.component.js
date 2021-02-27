@@ -20,7 +20,7 @@ export default {
     controllerAs: 'vm'
 };
 
-function Controller(logger, DoctorService) {
+function Controller(logger, DoctorService, TableService) {
     'ngInject';
     'use strict';
 
@@ -37,4 +37,31 @@ function Controller(logger, DoctorService) {
             logger.error('Error running diagnosis', response);
         });
     }
+
+    // ** START: TABLE
+    vm.tableId = TableService.getUniqueTableId('doctor-diagnosis-table');
+    vm.tableHeaderConfig = [
+        {
+            label: '',
+            isSortable: false,
+            showOnSmallTable: false,
+            isXsColumn: true
+        },
+        {
+            label: 'ADMINCONSOLE.DOCTOR.DIAGNOSIS.TABLE.COLUMN.SEVERITY',
+            isSortable: true,
+            sortingKey: 'severity'
+        },
+        {
+            label: 'ADMINCONSOLE.DOCTOR.DIAGNOSIS.TABLE.COLUMN.AUDIENCE',
+            flexGtXs: 15,
+            isSortable: false
+        },
+        {
+            label: 'ADMINCONSOLE.DOCTOR.DIAGNOSIS.TABLE.COLUMN.MESSAGE',
+            flexGtXs: 55,
+            isSortable: false
+        }
+    ];
+    // ## END: TABLE
 }
