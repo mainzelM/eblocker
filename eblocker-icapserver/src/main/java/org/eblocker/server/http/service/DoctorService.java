@@ -166,8 +166,11 @@ public class DoctorService {
     private boolean hasNonGoodNameServers() {
         List<NameServerStats> nameServerStats = dnsStatisticsService.getResolverStatistics("custom",
                 ZonedDateTime.now().minusHours(24).toInstant()).getNameServerStats();
-        // TODO: deal with empty stat list
-        return nameServerStats.stream().anyMatch(nss -> !nss.getRating().equals(DnsRating.GOOD));
+        if (nameServerStats.isEmpty()) {
+            return true;
+        } else {
+            return nameServerStats.stream().anyMatch(nss -> !nss.getRating().equals(DnsRating.GOOD));
+        }
     }
 
     private boolean pingHost(int ipVersion, String hostName) {
