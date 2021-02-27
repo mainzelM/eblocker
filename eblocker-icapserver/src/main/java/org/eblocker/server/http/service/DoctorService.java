@@ -74,11 +74,7 @@ public class DoctorService {
         //diagnoses.add(recommendationNotFollowedEveryone("FAKE: Malware & Phishing Blocker list is not enabled globally for Domain Blocking"));
 
         //diagnoses.add(recommendationNotFollowedEveryone("FAKE: Malware & Phishing Blocker list is not enabled globally for Pattern Blocking"));
-
-        //diagnoses.add(recommendationNotFollowedEveryone("FAKE: Malware & Phishing Blocker list is not enabled for device XY"));
-
-        //diagnoses.add(recommendationNotFollowedEveryone("FAKE: Control bar is not auto-configured for device XY"));
-
+        
         diagnoses.addAll(autoUpdateChecks());
 
         //diagnoses.add(new DoctorDiagnosisResult(ANORMALY, EVERYONE, "FAKE: Child XY has no restrictions"));
