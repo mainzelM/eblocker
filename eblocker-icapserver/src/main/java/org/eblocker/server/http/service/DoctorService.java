@@ -51,12 +51,7 @@ public class DoctorService {
     public List<DoctorDiagnosisResult> runDiagnosis() {
         List<DoctorDiagnosisResult> diagnoses = new ArrayList<>();
 
-        NetworkConfiguration currentNetworkConfiguration = networkServices.getCurrentNetworkConfiguration();
-        if (currentNetworkConfiguration.isAutomatic()) {
-            diagnoses.add(new DoctorDiagnosisResult(HINT, EVERYONE, "You are using the automatic network mode. It may cause problems."));
-        } else {
-            diagnoses.add(goodForEveryone("You are using a good network mode"));
-        }
+        diagnoses.add(networkModeCheck());
 
         diagnoses.add(ipv4Ping());
 
@@ -86,6 +81,15 @@ public class DoctorService {
             diagnoses.add(goodForEveryone("Your name servers look good"));
         }
         return diagnoses;
+    }
+
+    private DoctorDiagnosisResult networkModeCheck() {
+        NetworkConfiguration currentNetworkConfiguration = networkServices.getCurrentNetworkConfiguration();
+        if (currentNetworkConfiguration.isAutomatic()) {
+            return new DoctorDiagnosisResult(HINT, EVERYONE, "You are using the automatic network mode. It may cause problems.");
+        } else {
+            return goodForEveryone("You are using a good network mode");
+        }
     }
 
     private List<DoctorDiagnosisResult> autoUpdateChecks() {
