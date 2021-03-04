@@ -7,9 +7,12 @@ import org.eblocker.server.common.data.DeviceFactory;
 import org.eblocker.server.common.data.DoctorDiagnosisResult;
 import org.eblocker.server.common.data.FilterMode;
 import org.eblocker.server.common.data.NetworkConfiguration;
+import org.eblocker.server.common.data.UserProfileModule;
+import org.eblocker.server.common.data.UserProfileModule.InternetAccessRestrictionMode;
 import org.eblocker.server.common.data.dns.DnsRating;
 import org.eblocker.server.common.data.dns.NameServerStats;
 import org.eblocker.server.common.network.NetworkServices;
+import org.eblocker.server.common.network.ProblematicRouterDetection;
 import org.eblocker.server.common.ssl.SslService;
 import org.eblocker.server.common.update.AutomaticUpdater;
 import org.eblocker.server.common.update.DebianUpdater;
@@ -21,6 +24,7 @@ import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -28,6 +32,7 @@ import java.util.stream.Stream;
 import static java.util.function.Predicate.not;
 import static org.eblocker.server.common.data.DoctorDiagnosisResult.Audience.EVERYONE;
 import static org.eblocker.server.common.data.DoctorDiagnosisResult.Audience.EXPERT;
+import static org.eblocker.server.common.data.DoctorDiagnosisResult.Severity.ANORMALY;
 import static org.eblocker.server.common.data.DoctorDiagnosisResult.Severity.FAILED_PROBE;
 import static org.eblocker.server.common.data.DoctorDiagnosisResult.Severity.GOOD;
 import static org.eblocker.server.common.data.DoctorDiagnosisResult.Severity.HINT;
@@ -43,10 +48,13 @@ public class DoctorService {
     private final DnsStatisticsService dnsStatisticsService;
     private final DeviceFactory deviceFactory;
     private final DeviceService deviceService;
+    private final ParentalControlService parentalControlService;
+    private Optional<Boolean> isProblematicRouter = Optional.empty();
+    private final ProblematicRouterDetection problematicRouterDetection;
 
     @Inject
     public DoctorService(NetworkServices networkServices, SslService sslService, AutomaticUpdater automaticUpdater, DebianUpdater debianUpdater, DnsStatisticsService dnsStatisticsService, DeviceFactory deviceFactory,
-                         DeviceService deviceService) {
+                         DeviceService deviceService, ParentalControlService parentalControlService, ProblematicRouterDetection problematicRouterDetection) {
         this.networkServices = networkServices;
         this.sslService = sslService;
         this.automaticUpdater = automaticUpdater;
@@ -54,6 +62,9 @@ public class DoctorService {
         this.dnsStatisticsService = dnsStatisticsService;
         this.deviceFactory = deviceFactory;
         this.deviceService = deviceService;
+        this.parentalControlService = parentalControlService;
+        this.problematicRouterDetection = problematicRouterDetection;
+        problematicRouterDetection.addObserver((observable, arg) -> isProblematicRouter = Optional.of(true)); // TODO: true is wrong, but arg will always be null because ProblematicRouterDetection is stupid
     }
 
     public List<DoctorDiagnosisResult> runDiagnosis() {
@@ -74,17 +85,46 @@ public class DoctorService {
         //diagnoses.add(recommendationNotFollowedEveryone("FAKE: Malware & Phishing Blocker list is not enabled globally for Domain Blocking"));
 
         //diagnoses.add(recommendationNotFollowedEveryone("FAKE: Malware & Phishing Blocker list is not enabled globally for Pattern Blocking"));
-        
+
         diagnoses.addAll(autoUpdateChecks());
 
-        //diagnoses.add(new DoctorDiagnosisResult(ANORMALY, EVERYONE, "FAKE: Child XY has no restrictions"));
+        diagnoses.addAll(checkParentalControl());
 
         if (hasNonGoodNameServers()) {
             diagnoses.add(failedProbe("You have name servers with non-good rating"));
         } else {
             diagnoses.add(goodForEveryone("Your name servers look good"));
         }
+
+        if (isProblematicRouter.isPresent() && isProblematicRouter.get()) {
+            diagnoses.add(failedProbe("Your router is problematic!"));
+        }
         return diagnoses;
+    }
+
+    private List<DoctorDiagnosisResult> checkParentalControl() {
+        List<DoctorDiagnosisResult> diagnoses = new ArrayList<>();
+        diagnoses.addAll(checkForUnrestrictedChildren());
+        return diagnoses;
+    }
+
+    private List<DoctorDiagnosisResult> checkForUnrestrictedChildren() {
+        List<String> unrestrictedChildren = parentalControlService.getProfiles().stream()
+                .filter(not(UserProfileModule::isBuiltin))
+                .filter(this::hasNoRestrictions)
+                .map(UserProfileModule::getName)
+                .collect(Collectors.toList());
+        if (unrestrictedChildren.isEmpty()) {
+            return Collections.emptyList();
+        } else {
+            return Collections.singletonList(new DoctorDiagnosisResult(ANORMALY, EVERYONE, "The following children have no restrictions at all: " + unrestrictedChildren));
+        }
+    }
+
+    private boolean hasNoRestrictions(UserProfileModule child) {
+        return child.getMaxUsageTimeByDay().isEmpty() &&
+                InternetAccessRestrictionMode.NONE.equals(child.getInternetAccessRestrictionMode()) &&
+                !child.isControlmodeMaxUsage();
     }
 
     private DoctorDiagnosisResult networkModeCheck() {
@@ -171,7 +211,7 @@ public class DoctorService {
         List<NameServerStats> nameServerStats = dnsStatisticsService.getResolverStatistics("custom",
                 ZonedDateTime.now().minusHours(24).toInstant()).getNameServerStats();
         if (nameServerStats.isEmpty()) {
-            return true;
+            return true; // TODO: probably wrong
         } else {
             return nameServerStats.stream().anyMatch(nss -> !nss.getRating().equals(DnsRating.GOOD));
         }
